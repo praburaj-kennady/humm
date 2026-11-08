@@ -6,7 +6,7 @@ The native app. SwiftUI, iOS 17 and up, no third-party packages.
 
 You need a Mac with **Xcode 16 or newer** (free on the Mac App Store).
 
-1. Download the code: on GitHub, **Code → Download ZIP**, then unzip it. (Or `git clone https://github.com/praburaj-kennady/hummm`.)
+1. Download the code: on GitHub, **Code → Download ZIP**, then unzip it. (Or `git clone https://github.com/praburaj-kennady/humm`.)
 2. Open `ios/Humm.xcodeproj`. Xcode opens the project.
 3. At the top of the window, pick an iPhone simulator (for example *iPhone 16 Pro*).
 4. Press **⌘R** (or the ▶ button). The simulator starts and the app opens.

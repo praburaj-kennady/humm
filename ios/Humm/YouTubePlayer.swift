@@ -29,7 +29,7 @@ final class YouTubeController: NSObject {
         webView.scrollView.isScrollEnabled = false
         webView.isUserInteractionEnabled = false // taps go to our own controls
         // YouTube wants to know which site the player is on.
-        webView.loadHTMLString(Self.page, baseURL: URL(string: "https://praburaj-kennady.github.io/hummm/"))
+        webView.loadHTMLString(Self.page, baseURL: URL(string: "https://praburaj-kennady.github.io/humm/"))
     }
 
     func load(_ hook: Hook, autoplay: Bool) {
