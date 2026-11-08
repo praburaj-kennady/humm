@@ -6,6 +6,10 @@ import Observation
 ///
 /// It knows a queue of hooks and which one is current, and it loops the
 /// current hook between its start and end until you swipe on.
+///
+/// To make swipes start fast it keeps three YouTube players warm, like three
+/// record decks: one plays, and the other two already have the next two hooks
+/// cued at the right second. Swiping just presses play on the next deck.
 @MainActor
 @Observable
 final class Player {
@@ -15,13 +19,20 @@ final class Player {
     private(set) var index = 0
     private(set) var status: Status = .idle
     private(set) var positionMs: Double = 0
+    /// Which of the three players is the one you hear and see.
+    private(set) var liveSlot = 0
     var listenOpen = false
 
-    @ObservationIgnored let youtube: YouTubeController
+    @ObservationIgnored let slots: [YouTubeController]
+    /// The hook each player has loaded or cued (by hook id).
+    @ObservationIgnored private var slotHook: [String?]
 
     init() {
-        youtube = YouTubeController()
-        youtube.onEvent = { [weak self] event in self?.handle(event) }
+        slots = (0..<3).map { _ in YouTubeController() }
+        slotHook = [nil, nil, nil]
+        for (i, slot) in slots.enumerated() {
+            slot.onEvent = { [weak self] event in self?.handle(event, from: i) }
+        }
     }
 
     var current: Hook? { queue.indices.contains(index) ? queue[index] : nil }
@@ -62,10 +73,10 @@ final class Player {
         case .idle, .error:
             start(h, autoplay: true)
         case .playing, .loading:
-            youtube.pause()
+            slots[liveSlot].pause()
             status = .paused
         case .paused:
-            youtube.play()
+            slots[liveSlot].play()
             status = .loading
         }
     }
@@ -74,7 +85,7 @@ final class Player {
         guard let h = current, h.isYouTube else { return }
         let ms = Double(h.startMs) + f * Double(h.endMs - h.startMs)
         let clamped = min(max(ms, Double(h.startMs)), Double(h.endMs) - 250)
-        youtube.seek(toSeconds: clamped / 1000)
+        slots[liveSlot].seek(toSeconds: clamped / 1000)
         positionMs = clamped
     }
 
@@ -82,27 +93,78 @@ final class Player {
         positionMs = Double(h.startMs)
         guard h.isYouTube else {
             // Instagram reels can't be controlled from the app; they open in Instagram.
-            youtube.pause()
+            slots[liveSlot].pause()
             status = .paused
             return
         }
+
+        // Use the player that already has this hook cued, if there is one.
+        let ready = slotHook.firstIndex(of: h.id)
+        let slot = ready ?? pickSlot(keeping: upcomingIDs)
+        if slot != liveSlot { slots[liveSlot].pause() }
+        liveSlot = slot
         status = autoplay ? .loading : .idle
-        youtube.load(h, autoplay: autoplay)
+
+        if ready != nil && autoplay {
+            slots[slot].play(fromSeconds: Double(h.startMs) / 1000)
+        } else {
+            slotHook[slot] = h.id
+            slots[slot].load(h, autoplay: autoplay)
+        }
     }
 
-    private func handle(_ event: YouTubeEvent) {
+    /// The next two YouTube hooks in the queue.
+    private var upcomingIDs: Set<String> {
+        Set([index + 1, index + 2]
+            .filter { queue.indices.contains($0) && queue[$0].isYouTube }
+            .map { queue[$0].id })
+    }
+
+    /// Cue the next two hooks in the spare players, so a swipe starts right away.
+    private func prepareUpcoming() {
+        let keep = upcomingIDs
+        for i in [index + 1, index + 2] where queue.indices.contains(i) {
+            let h = queue[i]
+            guard h.isYouTube, !slotHook.contains(h.id) else { continue }
+            let slot = pickSlot(keeping: keep)
+            guard slot != liveSlot else { return }
+            slotHook[slot] = h.id
+            slots[slot].load(h, autoplay: false)
+        }
+    }
+
+    /// A spare player: never the live one, and preferably one that isn't
+    /// holding a hook we're about to need.
+    private func pickSlot(keeping keep: Set<String>) -> Int {
+        let spare = slots.indices.filter { $0 != liveSlot }
+        return spare.first { slotHook[$0] == nil }
+            ?? spare.first { !keep.contains(slotHook[$0] ?? "") }
+            ?? spare.first
+            ?? liveSlot
+    }
+
+    private func handle(_ event: YouTubeEvent, from slot: Int) {
+        guard slot == liveSlot else {
+            // A spare player that can't play its hook: forget it, and the
+            // error shows properly if you swipe to that hook.
+            if case .error = event { slotHook[slot] = nil }
+            return
+        }
         switch event {
         case .ready:
             break
         case .state(1):
             status = .playing
+            prepareUpcoming()
+        case .state(5):
+            // Cued and waiting (the first hook on launch). Get the next ones ready too.
+            prepareUpcoming()
         case .state(2):
             if status != .loading { status = .paused }
         case .state(0):
             // The video ended before the hook did. Loop anyway.
             if let h = current {
-                youtube.seek(toSeconds: Double(h.startMs) / 1000)
-                youtube.play()
+                slots[slot].play(fromSeconds: Double(h.startMs) / 1000)
             }
         case .state:
             break
@@ -111,7 +173,7 @@ final class Player {
             let ms = seconds * 1000
             if ms >= Double(h.endMs) - 120 || ms < Double(h.startMs) - 1500 {
                 // The end of the hook: go back to its start.
-                youtube.seek(toSeconds: Double(h.startMs) / 1000)
+                slots[slot].seek(toSeconds: Double(h.startMs) / 1000)
                 positionMs = Double(h.startMs)
             } else {
                 positionMs = ms

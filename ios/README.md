@@ -34,16 +34,23 @@ Without any settings it runs on **demo data** (the seed songs) and says *Demo da
 | `HummApp.swift` | Starts the app. `RootView` stacks Browse, the mini player and Listen. |
 | `Views/BrowseView.swift` | The home screen: mood pills, Trending, Saved, By composer, the other rails. |
 | `Views/MiniPlayerView.swift` | What's playing, docked at the bottom. Tap to open Listen. |
-| `Views/ListenView.swift` | The full-screen feed. Swipe up for the next hook, drag down to go back. |
+| `Views/ListenView.swift` | The full-screen feed, artwork first. Swipe up for the next hook, drag down to go back. |
 | `Views/SourceSheet.swift` | "Where this hook is from": top Reel, full song, Make a reel. |
 | `Views/SearchView.swift` | Search by song, movie, composer, singer or mood. |
-| `Player.swift` | One player for the whole app. Keeps the queue and loops the hook. |
+| `Player.swift` | One player for the whole app. Keeps the queue, loops the hook, and keeps three YouTube players warm so swipes start fast. |
 | `YouTubePlayer.swift` | The YouTube embed in a web view, and the messages to and from it. |
 | `Backend.swift` | The three calls to Supabase, the anonymous sign-in, and demo mode. |
 | `Library.swift` | Browse data and your Saved list, shared by every screen. |
+| `ImageStore.swift` | Keeps artwork in memory so it shows instantly. |
 | `Theme.swift` | Colours from the Figma variables, press feedback, small formatters. |
 
 Motion follows the notes in the Figma file: swipes settle on a spring (0.45s, bounce 0.15), a quick flick moves on even after a short drag, Listen opens in 380ms on the iOS sheet curve and closes in 260ms, buttons press to 0.95. With Reduce Motion on, slides become simple swaps.
+
+## Why it starts fast
+
+- **Three warm players.** While one hook plays, the next two are already cued at their first second in two spare YouTube players. A swipe just presses play.
+- **Play on release.** The next hook starts the moment your finger lets go, while the page is still sliding in.
+- **Artwork first.** The song's picture shows straight away (it's downloaded when Browse loads). YouTube's player only appears inside the cover once sound is playing, and since that cover is small, YouTube usually picks a lighter stream.
 
 ## Known limits
 

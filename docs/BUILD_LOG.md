@@ -10,6 +10,7 @@ Newest first. Each entry: what changed, why, and what's next.
 - It reads Browse in one call (`get_home`) and saves with `toggle_save`. The first save quietly gives the phone an anonymous id.
 - Each hook plays through YouTube's own player and loops between its start and end.
 - A new CI job builds the app on a Mac in GitHub's cloud on every change.
+- Listen is now artwork first: the song's picture fills the screen and YouTube's player only shows inside a small cover once the hook is playing. Swipes start faster because the next two hooks are already cued in spare players.
 - The app is now called **Humm** (one fewer "m"). Shorter, and it's still the sound you make when a hook is stuck in your head.
 
 **Decisions**

@@ -48,6 +48,7 @@ final class Library {
             let fresh = try await Backend.shared.home()
             home = fresh
             saved = fresh.saved ?? []
+            ImageStore.shared.prefetch(allHooks.compactMap(\.thumbnail))
         } catch {
             loadError = error.localizedDescription
         }

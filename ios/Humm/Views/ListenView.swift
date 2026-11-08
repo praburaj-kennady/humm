@@ -2,6 +2,11 @@ import SwiftUI
 
 /// Listen: the full-screen feed, one hook at a time, looping.
 /// Swipe up for the next hook. Drag down (or tap the chevron) to go back to Browse.
+///
+/// Artwork first: the song's picture fills the screen (blurred) and sits as a
+/// big cover in the middle. YouTube's player only appears inside that cover
+/// once the hook is actually playing. YouTube requires its player to stay
+/// visible while it plays, so it's never hidden behind the artwork.
 struct ListenView: View {
     /// The screen size including the notch and home-indicator areas.
     let size: CGSize
@@ -18,6 +23,9 @@ struct ListenView: View {
     @State private var dragMode: DragMode?
     @State private var showSource = false
     @State private var flash: String?
+    /// While a swipe is still sliding into place, the page it started from.
+    /// The next hook starts playing as soon as you let go; the slide catches up.
+    @State private var swipingFrom: Int?
 
     private enum DragMode { case feed, collapse }
 
@@ -29,6 +37,8 @@ struct ListenView: View {
     var body: some View {
         ZStack(alignment: .top) {
             pager
+            videoLayer
+            centerLayer
             topBar
         }
         .frame(width: size.width, height: size.height)
@@ -49,16 +59,40 @@ struct ListenView: View {
 
     // MARK: Pages
 
+    private struct PageItem: Identifiable {
+        let hook: Hook
+        let position: Int // -1 above, 0 on screen, 1 below
+        var id: String { hook.id }
+    }
+
+    /// The page the layout is centred on. During a swipe it's still the old one.
+    private var baseIndex: Int { swipingFrom ?? player.index }
+
+    /// The pages around the screen, keyed by hook so a picture never reloads
+    /// when a page moves from "next" to "current".
+    private var pages: [PageItem] {
+        (-1...1).compactMap { d in
+            let i = baseIndex + d
+            return player.queue.indices.contains(i) ? PageItem(hook: player.queue[i], position: d) : nil
+        }
+    }
+
+    /// Where the playing hook's page is right now (it moves during a swipe).
+    private var liveOffset: CGFloat {
+        CGFloat(player.index - baseIndex) * size.height + feedDrag
+    }
+
+    /// The cover in the middle. YouTube needs its player at least 200 x 200.
+    private var cover: CGFloat {
+        max(220, min(size.width - 96, size.height * 0.36, 300)).rounded()
+    }
+    private var coverTop: CGFloat { insets.top + 72 }
+
     private var pager: some View {
         ZStack {
-            if let prev = player.previous {
-                page(prev, live: false).offset(y: -size.height + feedDrag)
-            }
-            if let hook = player.current {
-                page(hook, live: true).offset(y: feedDrag)
-            }
-            if let next = player.next {
-                page(next, live: false).offset(y: size.height + feedDrag)
+            ForEach(pages) { item in
+                page(item.hook, live: item.hook.id == player.current?.id && player.index == baseIndex + item.position)
+                    .offset(y: CGFloat(item.position) * size.height + feedDrag)
             }
         }
         .frame(width: size.width, height: size.height)
@@ -70,23 +104,31 @@ struct ListenView: View {
 
     private func page(_ hook: Hook, live: Bool) -> some View {
         ZStack(alignment: .bottom) {
+            // The artwork, blurred, fills the screen behind everything.
             Thumbnail(hook: hook)
-            if live && hook.isYouTube {
-                video
-            }
-            LinearGradient(colors: [.black.opacity(0.55), .clear], startPoint: .top, endPoint: .bottom)
-                .frame(height: 170)
+                .blur(radius: 44, opaque: true)
+                .overlay(Theme.bg.opacity(0.42))
+
+            Thumbnail(hook: hook)
+                .frame(width: cover, height: cover)
+                .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+                .shadow(color: .black.opacity(0.45), radius: 28, y: 14)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                .padding(.top, coverTop)
+
+            LinearGradient(colors: [.black.opacity(0.4), .clear], startPoint: .top, endPoint: .bottom)
+                .frame(height: 150)
                 .frame(maxHeight: .infinity, alignment: .top)
             LinearGradient(
                 stops: [
                     .init(color: Theme.bg.opacity(0), location: 0),
-                    .init(color: Theme.bg.opacity(0.6), location: 0.45),
-                    .init(color: Theme.bg.opacity(0.95), location: 1),
+                    .init(color: Theme.bg.opacity(0.55), location: 0.45),
+                    .init(color: Theme.bg.opacity(0.92), location: 1),
                 ],
                 startPoint: .top,
                 endPoint: .bottom
             )
-            .frame(height: 480)
+            .frame(height: 380)
 
             VStack(spacing: 22) {
                 HStack(alignment: .bottom, spacing: 12) {
@@ -99,26 +141,42 @@ struct ListenView: View {
             .padding(.leading, 20)
             .padding(.trailing, 14)
             .padding(.bottom, insets.bottom + 22)
-
-            if live { centerState(hook) }
         }
         .frame(width: size.width, height: size.height)
         .clipped()
         .foregroundStyle(Theme.text)
     }
 
-    /// The one YouTube player, scaled to fill the screen like a Reel.
-    private var video: some View {
-        let w = max(size.width, size.height * 16 / 9)
-        let h = max(size.height, size.width * 9 / 16)
-        let visible = player.status == .playing || player.status == .paused
-        return YouTubeSurface(controller: player.youtube)
-            .frame(width: w, height: h)
-            .frame(width: size.width, height: size.height)
-            .clipped()
-            .opacity(visible ? 1 : 0)
-            .animation(.easeOut(duration: 0.3), value: visible)
-            .allowsHitTesting(false)
+    /// The three warm YouTube players, stacked inside the cover. Only the one
+    /// that's playing shows; the others are waiting with the next hooks cued.
+    private var videoLayer: some View {
+        let visible = (player.status == .playing || player.status == .paused) && player.current?.isYouTube == true
+        return ZStack {
+            ForEach(player.slots.indices, id: \.self) { i in
+                YouTubeSurface(controller: player.slots[i])
+                    .opacity(visible && i == player.liveSlot ? 1 : 0)
+            }
+        }
+        .frame(width: cover, height: cover)
+        .background(Color.black)
+        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .opacity(visible ? 1 : 0)
+        .animation(.easeOut(duration: 0.25), value: visible)
+        .allowsHitTesting(false)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .padding(.top, coverTop)
+        .offset(y: liveOffset)
+    }
+
+    /// Play/pause badge, spinner or error, on top of the cover.
+    private var centerLayer: some View {
+        Group {
+            if let hook = player.current { centerState(hook) }
+        }
+        .frame(width: cover, height: cover)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .padding(.top, coverTop)
+        .offset(y: liveOffset)
     }
 
     private func info(_ hook: Hook) -> some View {
@@ -192,6 +250,7 @@ struct ListenView: View {
                     }
                 }
                 .font(.system(size: 14, weight: .medium))
+                .multilineTextAlignment(.center)
                 .padding(14)
                 .background(.black.opacity(0.7), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
             } else if !hook.isYouTube {
@@ -209,10 +268,10 @@ struct ListenView: View {
                 PlayStateBadge(symbol: "play.fill")
                     .transition(.scale(scale: 0.95).combined(with: .opacity))
             } else if player.status == .loading {
-                ProgressView().tint(.white)
+                ProgressView().tint(.white).controlSize(.large)
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(width: cover, height: cover)
         .allowsHitTesting(player.status == .error || !hook.isYouTube)
     }
 
@@ -255,6 +314,7 @@ struct ListenView: View {
     private var drag: some Gesture {
         DragGesture(minimumDistance: 12)
             .onChanged { value in
+                guard swipingFrom == nil else { return }
                 let dy = value.translation.height
                 if dragMode == nil { dragMode = dy < 0 ? .feed : .collapse }
                 switch dragMode {
@@ -300,13 +360,16 @@ struct ListenView: View {
             player.goTo(target)
             return
         }
+        // Start the next hook now, while its page slides into place.
+        swipingFrom = player.index
+        player.goTo(target)
         withAnimation(swipeSpring) {
             feedDrag = -size.height
         } completion: {
             var t = Transaction()
             t.disablesAnimations = true
             withTransaction(t) {
-                player.goTo(target)
+                swipingFrom = nil
                 feedDrag = 0
             }
         }

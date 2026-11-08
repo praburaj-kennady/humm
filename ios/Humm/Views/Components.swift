@@ -70,17 +70,25 @@ struct Chip: View {
 /// A YouTube thumbnail, cropped past the black bars YouTube adds.
 struct Thumbnail: View {
     let hook: Hook
+    /// Flips when a download finishes, so the picture appears.
+    @State private var loaded = false
+
     var body: some View {
+        let _ = loaded
+        let image = hook.thumbnail.flatMap { ImageStore.shared.cached($0) }
         Rectangle()
             .fill(Theme.gradient(for: hook.songSlug))
             .overlay {
-                AsyncImage(url: hook.thumbnail) { phase in
-                    if let image = phase.image {
-                        image.resizable().scaledToFill().scaleEffect(1.34)
-                    }
+                if let image {
+                    // YouTube thumbnails have black bars top and bottom; zoom past them.
+                    Image(uiImage: image).resizable().scaledToFill().scaleEffect(1.34)
                 }
             }
             .clipped()
+            .task(id: hook.thumbnail) {
+                guard let url = hook.thumbnail, ImageStore.shared.cached(url) == nil else { return }
+                if await ImageStore.shared.load(url) != nil { loaded.toggle() }
+            }
     }
 }
 

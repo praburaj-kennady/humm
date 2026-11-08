@@ -21,7 +21,7 @@ final class YouTubeController: NSObject {
         let config = WKWebViewConfiguration()
         config.allowsInlineMediaPlayback = true
         config.mediaTypesRequiringUserActionForPlayback = [] // the app may start sound itself
-        webView = WKWebView(frame: CGRect(x: 0, y: 0, width: 640, height: 360), configuration: config)
+        webView = WKWebView(frame: CGRect(x: 0, y: 0, width: 280, height: 280), configuration: config)
         super.init()
         config.userContentController.add(MessageRelay(self), name: "yt")
         webView.isOpaque = false
@@ -39,6 +39,8 @@ final class YouTubeController: NSObject {
     }
 
     func play() { run("hPlay()") }
+    /// Start a video that's already cued, from the hook's first second.
+    func play(fromSeconds s: Double) { run("hPlayFrom(\(s))") }
     func pause() { run("hPause()") }
     func seek(toSeconds s: Double) { run("hSeek(\(s))") }
 
@@ -64,9 +66,9 @@ final class YouTubeController: NSObject {
     <style>html,body{margin:0;height:100%;background:#000;overflow:hidden}#p{position:absolute;inset:0;width:100%;height:100%}</style>
     </head><body><div id="p"></div>
     <script>
-    var player = null, ready = false, queued = null, timer = null;
+    var player = null, ready = false, queued = [], timer = null;
     function post(m) { window.webkit.messageHandlers.yt.postMessage(m); }
-    function whenReady(f) { if (ready) f(); else queued = f; }
+    function whenReady(f) { if (ready) f(); else queued.push(f); }
     function tick() { stopTick(); timer = setInterval(function () { post({ type: 'time', t: player.getCurrentTime() }); }, 200); }
     function stopTick() { if (timer) { clearInterval(timer); timer = null; } }
     function onYouTubeIframeAPIReady() {
@@ -75,7 +77,7 @@ final class YouTubeController: NSObject {
         width: '100%', height: '100%',
         playerVars: { playsinline: 1, controls: 0, disablekb: 1, fs: 0, rel: 0, iv_load_policy: 3, modestbranding: 1, origin: location.origin },
         events: {
-          onReady: function () { ready = true; post({ type: 'ready' }); if (queued) { var q = queued; queued = null; q(); } },
+          onReady: function () { ready = true; post({ type: 'ready' }); var q = queued; queued = []; q.forEach(function (f) { f(); }); },
           onStateChange: function (e) { post({ type: 'state', state: e.data }); if (e.data === 1) tick(); else stopTick(); },
           onError: function (e) { post({ type: 'error', code: e.data }); }
         }
@@ -84,6 +86,7 @@ final class YouTubeController: NSObject {
     function hLoad(id, start) { whenReady(function () { player.loadVideoById({ videoId: id, startSeconds: start }); }); }
     function hCue(id, start) { whenReady(function () { player.cueVideoById({ videoId: id, startSeconds: start }); }); }
     function hPlay() { whenReady(function () { player.playVideo(); }); }
+    function hPlayFrom(s) { whenReady(function () { player.seekTo(s, true); player.playVideo(); }); }
     function hPause() { whenReady(function () { player.pauseVideo(); }); }
     function hSeek(s) { whenReady(function () { player.seekTo(s, true); }); }
     </script>
