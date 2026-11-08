@@ -1,4 +1,4 @@
--- Sample data for Hummm.
+-- Sample data for Humm.
 --
 -- What's real: song titles, movies, composers, singers and the YouTube video
 -- ids (official uploads by Sun TV, Sony Music South, Think Music and others).

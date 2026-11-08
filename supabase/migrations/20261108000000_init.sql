@@ -1,4 +1,4 @@
--- Hummm: the best part of Tamil songs, played through YouTube / Instagram embeds.
+-- Humm: the best part of Tamil songs, played through YouTube / Instagram embeds.
 --
 -- The app never stores or cuts audio. A "hook" is just metadata:
 -- which video, where the good part starts and ends, and what it feels like.

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Copy this file to Humm/Supabase.plist and fill in both values.
+	     Both are safe inside an app: the publishable key can only do what
+	     the database's row level security allows. Supabase.plist is
+	     git-ignored so the real values stay out of the repo. -->
+	<key>SUPABASE_URL</key>
+	<string>https://<project-ref>.supabase.co</string>
+	<key>SUPABASE_PUBLISHABLE_KEY</key>
+	<string>sb_publishable_<your-key></string>
+</dict>
+</plist>

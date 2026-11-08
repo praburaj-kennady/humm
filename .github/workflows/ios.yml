@@ -1,0 +1,55 @@
+name: iOS build
+on:
+  push:
+    branches: [main]
+    paths: ["ios/**", ".github/workflows/ios.yml"]
+  pull_request:
+    paths: ["ios/**", ".github/workflows/ios.yml"]
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Xcode version
+        run: xcodebuild -version
+      - name: Build for the iOS Simulator (demo data, no signing)
+        run: |
+          xcodebuild build \
+            -project ios/Humm.xcodeproj \
+            -target Humm \
+            -sdk iphonesimulator \
+            -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO
+      - name: Take screenshots in the simulator
+        run: |
+          UDID=$(xcrun simctl list devices available -j | python3 -c '
+          import json, sys
+          devices = json.load(sys.stdin)["devices"]
+          runtimes = sorted(k for k in devices if "iOS" in k)
+          phones = [d for d in devices[runtimes[-1]] if d["name"].startswith("iPhone")]
+          pro = [d for d in phones if "Pro" in d["name"] and "Max" not in d["name"]]
+          print((pro or phones)[0]["udid"])')
+          xcrun simctl boot "$UDID"
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl status_bar "$UDID" override --time 9:41 --batteryLevel 100 --cellularBars 4 || true
+          xcrun simctl install "$UDID" ios/build/Debug-iphonesimulator/Humm.app
+          mkdir -p shots
+          for scene in browse listen source; do
+            xcrun simctl terminate "$UDID" me.praburajkennady.humm 2>/dev/null || true
+            xcrun simctl launch "$UDID" me.praburajkennady.humm -scene "$scene"
+            sleep 18
+            xcrun simctl io "$UDID" screenshot "shots/$scene.png"
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: shots/*.png
+      - name: Print small copies of the screenshots
+        run: |
+          for f in shots/*.png; do
+            sips -Z 720 -s format jpeg -s formatOptions 60 "$f" --out "${f%.png}.jpg" >/dev/null
+            echo "=== BEGIN $f"
+            base64 -b 120 -i "${f%.png}.jpg"
+            echo "=== END $f"
+          done
