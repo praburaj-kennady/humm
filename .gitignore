@@ -4,3 +4,9 @@ supabase/.branches
 supabase/.temp
 node_modules
 .DS_Store
+
+# iOS
+ios/Hummm/Supabase.plist
+xcuserdata/
+DerivedData/
+*.xcuserstate

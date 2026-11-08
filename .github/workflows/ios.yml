@@ -1,0 +1,23 @@
+name: iOS build
+on:
+  push:
+    branches: [main]
+    paths: ["ios/**", ".github/workflows/ios.yml"]
+  pull_request:
+    paths: ["ios/**", ".github/workflows/ios.yml"]
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Xcode version
+        run: xcodebuild -version
+      - name: Build for the iOS Simulator (demo data, no signing)
+        run: |
+          xcodebuild build \
+            -project ios/Hummm.xcodeproj \
+            -target Hummm \
+            -sdk iphonesimulator \
+            -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO
