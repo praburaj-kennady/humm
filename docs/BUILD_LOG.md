@@ -2,6 +2,24 @@
 
 Newest first. Each entry: what changed, why, and what's next.
 
+## Day 1, later · 8 Nov 2026 · It's live
+
+**What shipped**
+
+- The backend now runs on a free Supabase project (Mumbai region, close to most listeners).
+- Anonymous sign-ins are on, so Saved works from the first tap.
+- Supabase's security check: 0 issues.
+
+**What I learned**
+
+- My AI pair couldn't apply the schema itself: Supabase asks the project owner to confirm changes that touch permissions, and that prompt never reached me. So I pasted the schema and seed into the SQL Editor myself. It took two minutes, and I now know what's actually in the back room.
+- The public ("publishable") key is meant to ship inside the app. It's the front-door pass; the database rules decide what comes through. The secret key is the one to guard.
+
+**Next**
+
+- Add a captcha to anonymous sign-ins before the app is shared widely, so bots can't burn through the free quota.
+- Tune hook timings by ear, and add Instagram links.
+
 ## Day 1 · 8 Nov 2026 · The backend
 
 **What shipped**
