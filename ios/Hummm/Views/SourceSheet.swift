@@ -3,6 +3,8 @@ import SwiftUI
 /// "Where this hook is from": the top Reel, the full song, and Make a reel.
 struct SourceSheet: View {
     let hook: Hook
+    /// The sheet is exactly as tall as what's in it, measured after layout.
+    @State private var contentHeight: CGFloat = 330
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -42,8 +44,10 @@ struct SourceSheet: View {
         .foregroundStyle(Theme.text)
         .padding(.horizontal, 20)
         .padding(.top, 24)
+        .padding(.bottom, 28)
+        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { contentHeight = $0 }
         .frame(maxHeight: .infinity, alignment: .top)
-        .presentationDetents([.height(hook.makeReelLink == nil ? 380 : 350)])
+        .presentationDetents([.height(contentHeight)])
         .presentationDragIndicator(.visible)
         .presentationCornerRadius(32)
         .presentationBackground(Theme.surface)
