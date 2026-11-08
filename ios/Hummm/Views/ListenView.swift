@@ -37,6 +37,14 @@ struct ListenView: View {
             if let hook = player.current { SourceSheet(hook: hook) }
         }
         .sensoryFeedback(.impact(weight: .light), trigger: player.index)
+        #if DEBUG
+        .task {
+            if DebugScene.name == "source" {
+                try? await Task.sleep(for: .seconds(4))
+                showSource = true
+            }
+        }
+        #endif
     }
 
     // MARK: Pages

@@ -87,6 +87,9 @@ struct RootView: View {
             if player.current == nil, let first = library.chart ?? library.home?.rails.first {
                 player.cue(first.hooks, at: 0)
             }
+            #if DEBUG
+            DebugScene.apply(player: player, library: library)
+            #endif
         }
     }
 }
