@@ -1,4 +1,4 @@
-# Hummm for iPhone
+# Humm for iPhone
 
 The native app. SwiftUI, iOS 17 and up, no third-party packages.
 
@@ -7,7 +7,7 @@ The native app. SwiftUI, iOS 17 and up, no third-party packages.
 You need a Mac with **Xcode 16 or newer** (free on the Mac App Store).
 
 1. Download the code: on GitHub, **Code → Download ZIP**, then unzip it. (Or `git clone https://github.com/praburaj-kennady/hummm`.)
-2. Open `ios/Hummm.xcodeproj`. Xcode opens the project.
+2. Open `ios/Humm.xcodeproj`. Xcode opens the project.
 3. At the top of the window, pick an iPhone simulator (for example *iPhone 16 Pro*).
 4. Press **⌘R** (or the ▶ button). The simulator starts and the app opens.
 
@@ -15,7 +15,7 @@ Without any settings it runs on **demo data** (the seed songs) and says *Demo da
 
 ## Connect it to the live backend
 
-1. Copy `ios/Supabase.example.plist` into the `ios/Hummm/` folder and rename it `Supabase.plist`.
+1. Copy `ios/Supabase.example.plist` into the `ios/Humm/` folder and rename it `Supabase.plist`.
 2. Open it and fill in the two values from Supabase (**Project Settings → API Keys**): the project URL and the **publishable** key (starts with `sb_publishable_`). Never the secret key.
 3. Run again. The *Demo data* pill disappears, Browse loads from Supabase, and saves go to your database.
 
@@ -24,14 +24,14 @@ Without any settings it runs on **demo data** (the seed songs) and says *Demo da
 ## Run it on your own iPhone
 
 1. Plug the iPhone in and pick it at the top of Xcode instead of a simulator.
-2. Click the **Hummm** project → **Signing & Capabilities** → choose your Apple ID as the Team. A free Apple ID works; the app then lasts 7 days before you run it again.
+2. Click the **Humm** project → **Signing & Capabilities** → choose your Apple ID as the Team. A free Apple ID works; the app then lasts 7 days before you run it again.
 3. Press **⌘R**. The first time, the iPhone asks you to trust the developer in **Settings → General → VPN & Device Management**.
 
 ## How it's put together
 
 | File | What it does |
 |---|---|
-| `HummmApp.swift` | Starts the app. `RootView` stacks Browse, the mini player and Listen. |
+| `HummApp.swift` | Starts the app. `RootView` stacks Browse, the mini player and Listen. |
 | `Views/BrowseView.swift` | The home screen: mood pills, Trending, Saved, By composer, the other rails. |
 | `Views/MiniPlayerView.swift` | What's playing, docked at the bottom. Tap to open Listen. |
 | `Views/ListenView.swift` | The full-screen feed. Swipe up for the next hook, drag down to go back. |

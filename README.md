@@ -1,4 +1,4 @@
-# Hummm
+# Humm
 
 **The best 20 seconds of Tamil songs.** The part everyone hums, the part every Reel uses. Swipe through hooks, save the ones you love, jump to the full song or make your own reel.
 
@@ -6,13 +6,13 @@
 
 ## The idea
 
-Most people meet a Tamil song through a 15-second Reel or Short, not the full track. Hummm leans into that: the unit of listening is the **hook**, not the song.
+Most people meet a Tamil song through a 15-second Reel or Short, not the full track. Humm leans into that: the unit of listening is the **hook**, not the song.
 
 - **Browse** is the home screen: rails of hooks (this week's chart, moods, hand-picked sets) and your Saved list.
 - **Listen** is a full-screen swipe feed, one hook at a time, opened from the mini player.
 - Every hook has a **Source** sheet (the top Reel using it, and the full song on YouTube) and a **Make a reel** link.
 
-Hummm never hosts, downloads or cuts audio. Every hook plays through the official YouTube or Instagram embed. The database only stores *where* the good part is.
+Humm never hosts, downloads or cuts audio. Every hook plays through the official YouTube or Instagram embed. The database only stores *where* the good part is.
 
 ## Build in public
 
@@ -73,7 +73,7 @@ Details and examples: [docs/API.md](docs/API.md).
 
 ## The iPhone app
 
-The SwiftUI app lives in [`ios/`](ios). Open `ios/Hummm.xcodeproj` in Xcode 16+ and press Run; it works on demo data until you add your Supabase settings. Steps in [ios/README.md](ios/README.md).
+The SwiftUI app lives in [`ios/`](ios). Open `ios/Humm.xcodeproj` in Xcode 16+ and press Run; it works on demo data until you add your Supabase settings. Steps in [ios/README.md](ios/README.md).
 
 ## Run the backend
 

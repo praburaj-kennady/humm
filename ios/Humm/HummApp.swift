@@ -2,7 +2,7 @@ import SwiftUI
 import AVFoundation
 
 @main
-struct HummmApp: App {
+struct HummApp: App {
     @State private var library = Library()
     @State private var player = Player()
 

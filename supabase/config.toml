@@ -1,5 +1,5 @@
 # Minimal Supabase CLI config. `supabase start` fills in the rest with defaults.
-project_id = "hummm"
+project_id = "humm"
 
 [db]
 major_version = 17

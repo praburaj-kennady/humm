@@ -163,7 +163,7 @@ struct ListenView: View {
             .sensoryFeedback(.success, trigger: saved)
 
             if let link = hook.sourceLink {
-                ShareLink(item: link, message: Text("The best part of \(hook.songTitle), found on Hummm")) {
+                ShareLink(item: link, message: Text("The best part of \(hook.songTitle), found on Humm")) {
                     ActionLabel(label: "Share", symbol: "square.and.arrow.up")
                 }
                 .buttonStyle(PressScale())

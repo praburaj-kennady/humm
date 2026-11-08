@@ -6,7 +6,7 @@ node_modules
 .DS_Store
 
 # iOS
-ios/Hummm/Supabase.plist
+ios/Humm/Supabase.plist
 xcuserdata/
 DerivedData/
 *.xcuserstate

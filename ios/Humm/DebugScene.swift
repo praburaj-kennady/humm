@@ -2,7 +2,7 @@
 import Foundation
 
 /// Debug builds only: lets CI open a given screen for a screenshot.
-/// `xcrun simctl launch <device> me.praburajkennady.hummm -scene listen`
+/// `xcrun simctl launch <device> me.praburajkennady.humm -scene listen`
 enum DebugScene {
     static var name: String? { UserDefaults.standard.string(forKey: "scene") }
 

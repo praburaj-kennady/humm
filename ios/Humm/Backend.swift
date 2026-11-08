@@ -56,8 +56,8 @@ actor Backend {
     nonisolated let config: SupabaseConfig? = SupabaseConfig.load()
     nonisolated var isDemo: Bool { config == nil }
 
-    private let sessionKey = "hummm.session"
-    private let demoSavesKey = "hummm.demo-saves"
+    private let sessionKey = "humm.session"
+    private let demoSavesKey = "humm.demo-saves"
 
     private let decoder: JSONDecoder = {
         let d = JSONDecoder()

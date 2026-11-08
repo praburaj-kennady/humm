@@ -185,7 +185,7 @@ struct BrowseView: View {
 
     private var footer: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Hooks play through the official YouTube player. Hummm never hosts or cuts audio.")
+            Text("Hooks play through the official YouTube player. Humm never hosts or cuts audio.")
             Text("A portfolio project by Praburaj Kennady, built in public.")
         }
         .font(.system(size: 12))
