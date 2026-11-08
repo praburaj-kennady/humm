@@ -1,0 +1,13 @@
+# Minimal Supabase CLI config. `supabase start` fills in the rest with defaults.
+project_id = "hummm"
+
+[db]
+major_version = 17
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
+
+[auth]
+# Saved list works without sign-up: the app signs everyone in anonymously.
+enable_anonymous_sign_ins = true
