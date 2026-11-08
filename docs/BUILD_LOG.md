@@ -2,6 +2,29 @@
 
 Newest first. Each entry: what changed, why, and what's next.
 
+## Day 1, evening · 8 Nov 2026 · The iPhone app
+
+**What shipped**
+
+- A native SwiftUI app with the flow from Figma: Browse is home, a mini player docks at the bottom, and Listen slides up full screen with one hook at a time.
+- It reads Browse in one call (`get_home`) and saves with `toggle_save`. The first save quietly gives the phone an anonymous id.
+- Each hook plays through YouTube's own player and loops between its start and end.
+- A new CI job builds the app on a Mac in GitHub's cloud on every change.
+
+**Decisions**
+
+4. [Native iPhone first](decisions/0004-native-ios-first.md). A real SwiftUI app over a web page that imitates one.
+
+**What I learned**
+
+- Motion specs written in the design file (spring 0.45s, bounce 0.15) map one-to-one onto SwiftUI. The notes became code almost word for word.
+- One shared player, not one per screen, is what lets a hook keep playing while you go from Listen back to Browse.
+
+**Next**
+
+- Run it on a real iPhone and tune the feel.
+- TestFlight, so others can try it.
+
 ## Day 1, later · 8 Nov 2026 · It's live
 
 **What shipped**

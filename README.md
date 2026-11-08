@@ -71,7 +71,11 @@ erDiagram
 
 Details and examples: [docs/API.md](docs/API.md).
 
-## Run it
+## The iPhone app
+
+The SwiftUI app lives in [`ios/`](ios). Open `ios/Hummm.xcodeproj` in Xcode 16+ and press Run; it works on demo data until you add your Supabase settings. Steps in [ios/README.md](ios/README.md).
+
+## Run the backend
 
 **Quick test (just Postgres, no Docker):**
 
